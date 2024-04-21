@@ -227,7 +227,7 @@ class TestbedContextManager:
 
     def __enter__(self):
         """
-        Set up testbed (conda environments, git repositories)
+        NOTE: Set up testbed (conda environments, git repositories)
         """
         # If path_conda not provided, create temporary miniconda3 installation
         is_osx_64 = False
@@ -298,7 +298,7 @@ class TestbedContextManager:
         exec_cmd = os.path.join(self.path_conda, "bin", "conda")
         env_list = get_conda_env_names(exec_cmd)
 
-        # Set up testbed (environment, github repo) for each repo
+        # NOTE: Set up testbed (environment, github repo) for each repo
         for repo, version_to_setup_ref in self.setup_refs.items():
             repo_prefix = repo.replace("/", "__")
 
@@ -325,6 +325,11 @@ class TestbedContextManager:
                     self.log.write(f"Cloned {repo} to {repo_path}")
                 else:
                     self.log.write(f"Repo for {repo_prefix} version {version} exists: {repo_path}; skipping")
+
+                # NOTE: set the ownership and tag of the repo as safe: allows changes to the repo without
+                # fatal: detected dubious ownership in repository at <repo_path> error
+                safe_dir_cmd = ['git', 'config', '--global', '--add', 'safe.directory', os.path.abspath(repo_path)]
+                self.exec(safe_dir_cmd)
 
                 # Skip if conda environment already exists
                 if env_name in env_list:
